@@ -4,44 +4,55 @@ const { useState, useEffect } = React;
 function App() {
   const [userId, setUserId] = useState(null);
   const [wallet, setWallet] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
 
-    if (tg && tg.initDataUnsafe?.user) {
-      setUserId(tg.initDataUnsafe.user.id);
-      tg.ready();
-      tg.expand();
-    } else {
-      setUserId('❌ Mini App відкрито не в Telegram!');
+    if (!tg) {
+      setError('❌ Відкрий Mini App через Telegram!');
+      return;
     }
 
-    // Ініціалізація TonConnect
+    if (!tg.initDataUnsafe?.user) {
+      setError('❌ Користувач не знайдений. Відкрий Mini App через бота!');
+      return;
+    }
+
+    setUserId(tg.initDataUnsafe.user.id);
+    tg.ready();
+    tg.expand();
+
     window.tonConnect = new window.TonConnect({
-      manifestUrl: 'https://maksymsuper.github.io/ton-wallet-mini-app/tonconnect-manifest.json'
+      manifestUrl: 'https://MaksimTroianchuk.github.io/ton-wallet-mini-app/tonconnect-manifest.json'
     });
 
-    // Якщо вже підключено — показати адресу
     window.tonConnect.restoreConnection().then(() => {
-      const connected = window.tonConnect.account;
-      if (connected) {
-        setWallet(connected.address);
-      }
+      const acct = window.tonConnect.account;
+      if (acct) setWallet(acct.address);
+    }).catch(() => {
+      // Ігноруємо помилки підключення на цьому етапі
     });
   }, []);
 
   const handleConnect = async () => {
-    const result = await window.tonConnect.connect();
-    if (result && result.account) {
-      setWallet(result.account.address);
+    try {
+      const r = await window.tonConnect.connect();
+      if (r?.account) setWallet(r.account.address);
+    } catch {
+      setError('❌ Не вдалося підключити гаманець.');
     }
   };
 
+  if (error) {
+    return e('div', { style: { padding: 20, fontFamily: 'Arial', color: 'red' } }, error);
+  }
+
   return e('div', { style: { padding: 20, fontFamily: 'Arial, sans-serif' } },
     e('h2', null, '👛 TON Wallet Mini App'),
-    e('div', null, 'Ваш Telegram ID: ', e('b', null, userId)),
+    e('div', null, 'Telegram ID: ', e('b', null, userId)),
     wallet
-      ? e('div', { style: { marginTop: 10 } }, '🔗 Гаманець підключено: ', e('b', null, wallet))
+      ? e('div', { style: { marginTop: 10 } }, 'Гаманець: ', e('b', null, wallet))
       : e('button', {
           onClick: handleConnect,
           style: { marginTop: 20, padding: '10px 20px', fontSize: '16px' }
@@ -49,6 +60,7 @@ function App() {
   );
 }
 
-const domContainer = document.querySelector('#root');
-ReactDOM.render(e(App), domContainer);
+const dom = document.querySelector('#root');
+ReactDOM.render(e(App), dom);
+
 
