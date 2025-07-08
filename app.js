@@ -3,43 +3,38 @@ const { useState, useEffect } = React;
 const { TonConnect } = window;
 
 function App() {
-  const [address, setAddress] = useState('Завантаження...');
+  const [address, setAddress] = useState('Не підключено');
   const [tokens, setTokens] = useState([]);
-  const [wallet, setWallet] = useState(null);
+  const [tonConnect, setTonConnect] = useState(null);
 
   useEffect(() => {
-    const tonConnect = new TonConnect();
+    const tc = new TonConnect();
+    setTonConnect(tc);
 
-    tonConnect.onStatusChange((wallet) => {
+    tc.onStatusChange((wallet) => {
       if (wallet) {
-        setWallet(wallet);
         setAddress(wallet.account.address);
-        // Тут ти можеш отримати список токенів з API або симулювати:
-        setTokens(['TON', 'USDT', 'NFT']);
+        setTokens(['TON', 'USDT', 'NFT']); // Поки що статично
       } else {
-        setWallet(null);
         setAddress('Не підключено');
         setTokens([]);
       }
     });
 
-    tonConnect.connect(); // Запитує підключення гаманця
+    // Автоматична спроба підключення
+    tc.connect();
   }, []);
 
   return e('div', { style: { padding: 20, fontFamily: 'Arial, sans-serif' } },
     e('h2', null, '👛 TON Wallet Mini App'),
     e('div', null, 'Адреса: ', e('b', null, address)),
     e('div', { style: { marginTop: 10 } }, 'Монети: ', tokens.join(' | ')),
-    !wallet && e('button', {
-      onClick: () => {
-        const tonConnect = new TonConnect();
-        tonConnect.connect();
-      },
-      style: { marginTop: 20, padding: '10px 20px' }
+    tonConnect && !address.includes('EQC') && e('button', {
+      onClick: () => tonConnect.connect(),
+      style: { marginTop: 20, padding: '10px 20px', fontSize: '16px' }
     }, 'Підключити гаманець')
   );
 }
 
 const domContainer = document.querySelector('#root');
 ReactDOM.render(e(App), domContainer);
-
