@@ -4,7 +4,6 @@ const { useState, useEffect } = React;
 function App() {
   const [userId, setUserId] = useState(null);
   const [wallet, setWallet] = useState(null);
-  let tonConnect;
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -18,16 +17,15 @@ function App() {
     }
 
     // Ініціалізація TonConnect
-    tonConnect = new window.TonConnect({
+    window.tonConnect = new window.TonConnect({
       manifestUrl: 'https://maksymsuper.github.io/ton-wallet-mini-app/tonconnect-manifest.json'
     });
 
-    window.tonConnect = tonConnect;
-
-    tonConnect.restoreConnection().then(() => {
-      const connectedWallet = tonConnect.account;
-      if (connectedWallet) {
-        setWallet(connectedWallet.address);
+    // Якщо вже підключено — показати адресу
+    window.tonConnect.restoreConnection().then(() => {
+      const connected = window.tonConnect.account;
+      if (connected) {
+        setWallet(connected.address);
       }
     });
   }, []);
@@ -43,7 +41,7 @@ function App() {
     e('h2', null, '👛 TON Wallet Mini App'),
     e('div', null, 'Ваш Telegram ID: ', e('b', null, userId)),
     wallet
-      ? e('div', { style: { marginTop: 10 } }, '🔗 Підключено до гаманця: ', e('b', null, wallet))
+      ? e('div', { style: { marginTop: 10 } }, '🔗 Гаманець підключено: ', e('b', null, wallet))
       : e('button', {
           onClick: handleConnect,
           style: { marginTop: 20, padding: '10px 20px', fontSize: '16px' }
@@ -53,3 +51,4 @@ function App() {
 
 const domContainer = document.querySelector('#root');
 ReactDOM.render(e(App), domContainer);
+
