@@ -1,0 +1,16 @@
+{
+  "manifest_version": "0.1.0",
+  "name": "TON Wallet Mini App",
+  "description": "Mini App для прийому монет в TON",
+  "url": "https://maksymsuper.github.io/ton-wallet-mini-app/",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/8/8c/TON_symbol.svg",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "bridge": {
+    "type": "tonconnect"
+  }
+}
